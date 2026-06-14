@@ -1,0 +1,49 @@
+---
+import { getCollection, getEntry, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { href } from '../../lib/url';
+import { fmtDate } from '../../lib/format';
+
+export async function getStaticPaths() {
+  const ideas = await getCollection('ideas');
+  return ideas.map((idea) => ({ params: { slug: idea.id } }));
+}
+
+const { slug } = Astro.params;
+const entry = await getEntry('ideas', slug!);
+if (!entry) {
+  return Astro.redirect(href('ideas'));
+}
+const { Content } = await render(entry);
+---
+
+<BaseLayout title={entry.data.title ?? 'Idea'}>
+  <a class="back muted" href={href('ideas')}>← ideas</a>
+  <h1>{entry.data.title ?? 'untitled idea'}</h1>
+  <p class="meta muted">captured {fmtDate(entry.data.captured)}</p>
+  {
+    entry.data.tags.length > 0 && (
+      <p>
+        {entry.data.tags.map((tag) => (
+          <span class="tag">#{tag}</span>
+        ))}
+      </p>
+    )
+  }
+
+  <article class="prose">
+    <Content />
+  </article>
+
+  <style>
+    .back {
+      display: inline-block;
+      margin-bottom: var(--space-4);
+      font-size: var(--text-sm);
+    }
+    .meta {
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+    }
+  </style>
+</BaseLayout>

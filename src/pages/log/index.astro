@@ -1,0 +1,70 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { href } from '../../lib/url';
+import { fmtDate } from '../../lib/format';
+
+const entries = (await getCollection('log')).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime()
+);
+
+// Group entries by year for a scannable timeline.
+const byYear = new Map<number, typeof entries>();
+for (const entry of entries) {
+  const year = entry.data.date.getFullYear();
+  if (!byYear.has(year)) byYear.set(year, []);
+  byYear.get(year)!.push(entry);
+}
+const years = [...byYear.keys()].sort((a, b) => b - a);
+---
+
+<BaseLayout title="Log" description="Dated work notes.">
+  <h1>Log</h1>
+  <p class="muted">Dated notes on what happened and what was on my mind.</p>
+
+  {
+    years.map((year) => (
+      <section class="section">
+        <div class="section-head">
+          <h2>{year}</h2>
+        </div>
+        <ul class="entries">
+          {byYear.get(year)!.map((entry) => (
+            <li>
+              <a href={href(`log/${entry.id}`)}>
+                {entry.data.title ?? fmtDate(entry.data.date)}
+              </a>
+              <span class="when muted">{fmtDate(entry.data.date)}</span>
+              {entry.data.pinned && <span class="pin" title="pinned">★</span>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+
+  {entries.length === 0 && <p class="muted">No log entries yet.</p>}
+
+  <style>
+    .entries {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .entries li {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-3);
+      padding: var(--space-2) 0;
+      border-bottom: var(--border);
+    }
+    .when {
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      margin-left: auto;
+    }
+    .pin {
+      color: var(--color-accent);
+    }
+  </style>
+</BaseLayout>

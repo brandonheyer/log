@@ -1,0 +1,191 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import EntryCard from '../components/EntryCard.astro';
+import StatusBadge from '../components/StatusBadge.astro';
+import { href } from '../lib/url';
+import { fmtDate, daysSince } from '../lib/format';
+import { rawContent } from '../../content/inbox.md';
+
+const projects = await getCollection('projects');
+const logEntries = await getCollection('log');
+const ideas = await getCollection('ideas');
+
+// "last touched" — fall back to started date, then epoch, so undefined sorts last.
+const touched = (p: (typeof projects)[number]) =>
+  (p.data.updated ?? p.data.started ?? new Date(0)).getTime();
+
+const active = projects
+  .filter((p) => p.data.status === 'active')
+  .sort((a, b) => touched(b) - touched(a));
+
+const sparks = projects
+  .filter((p) => p.data.status === 'spark')
+  .sort((a, b) => touched(b) - touched(a));
+
+// Resurface: dropped-but-revivable threads, oldest-touched first, so the things
+// most at risk of being forgotten float to the top.
+const resurface = projects
+  .filter((p) => p.data.status === 'paused' || p.data.status === 'spark')
+  .sort((a, b) => touched(a) - touched(b))
+  .slice(0, 4);
+
+const recentLog = logEntries
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 5);
+
+const recentIdeas = ideas
+  .sort((a, b) => b.data.captured.getTime() - a.data.captured.getTime())
+  .slice(0, 3);
+
+const inboxCount = rawContent()
+  .split('\n')
+  .filter((line) => /^\s*[-*]\s+\S/.test(line)).length;
+---
+
+<BaseLayout
+  title="Home"
+  description="A living, flexible work and idea log."
+>
+  <h1>What's alive right now</h1>
+  <p class="muted intro">
+    Capture in the <a href={href('inbox')}>inbox</a>, shape it into ideas and
+    projects, log the work. Nothing here expects you to keep momentum — dropped
+    threads resurface on their own.
+  </p>
+
+  <section class="section">
+    <div class="section-head">
+      <h2>Active</h2>
+      <a class="muted" href={href('projects')}>all projects →</a>
+    </div>
+    {
+      active.length > 0 ? (
+        <div class="grid">
+          {active.map((p) => (
+            <EntryCard
+              title={p.data.title}
+              url={href(`projects/${p.id}`)}
+              meta={p.data.updated ? `touched ${fmtDate(p.data.updated)}` : undefined}
+              summary={p.data.summary}
+              tags={p.data.tags}
+            >
+              <StatusBadge slot="badge" status={p.data.status} />
+            </EntryCard>
+          ))}
+        </div>
+      ) : (
+        <p class="muted">Nothing active. That's allowed.</p>
+      )
+    }
+  </section>
+
+  {
+    sparks.length > 0 && (
+      <section class="section">
+        <div class="section-head">
+          <h2>Sparks</h2>
+          <span class="muted">freshly excited</span>
+        </div>
+        <div class="grid">
+          {sparks.map((p) => (
+            <EntryCard
+              title={p.data.title}
+              url={href(`projects/${p.id}`)}
+              meta={p.data.started ? `started ${fmtDate(p.data.started)}` : undefined}
+              summary={p.data.summary}
+              tags={p.data.tags}
+            >
+              <StatusBadge slot="badge" status={p.data.status} />
+            </EntryCard>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  {
+    resurface.length > 0 && (
+      <section class="section">
+        <div class="section-head">
+          <h2>Resurface</h2>
+          <span class="muted">worth another look</span>
+        </div>
+        <div class="grid">
+          {resurface.map((p) => {
+            const days = daysSince(p.data.updated ?? p.data.started);
+            return (
+              <EntryCard
+                title={p.data.title}
+                url={href(`projects/${p.id}`)}
+                meta={days !== undefined ? `quiet for ${days} day${days === 1 ? '' : 's'}` : 'never touched'}
+                summary={p.data.summary}
+                tags={p.data.tags}
+              >
+                <StatusBadge slot="badge" status={p.data.status} />
+              </EntryCard>
+            );
+          })}
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section">
+    <div class="section-head">
+      <h2>Recent log</h2>
+      <a class="muted" href={href('log')}>all entries →</a>
+    </div>
+    {
+      recentLog.length > 0 ? (
+        <div class="grid">
+          {recentLog.map((entry) => (
+            <EntryCard
+              title={entry.data.title ?? fmtDate(entry.data.date)}
+              url={href(`log/${entry.id}`)}
+              meta={fmtDate(entry.data.date)}
+              tags={entry.data.tags}
+            />
+          ))}
+        </div>
+      ) : (
+        <p class="muted">No log entries yet.</p>
+      )
+    }
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <h2>Inbox &amp; ideas</h2>
+      <a class="muted" href={href('inbox')}>{inboxCount} in inbox →</a>
+    </div>
+    {
+      recentIdeas.length > 0 ? (
+        <div class="grid">
+          {recentIdeas.map((idea) => (
+            <EntryCard
+              title={idea.data.title ?? 'untitled idea'}
+              url={href(`ideas/${idea.id}`)}
+              meta={`captured ${fmtDate(idea.data.captured)}`}
+              tags={idea.data.tags}
+            />
+          ))}
+        </div>
+      ) : (
+        <p class="muted">No promoted ideas yet — check the inbox.</p>
+      )
+    }
+  </section>
+
+  <style>
+    .intro {
+      max-width: var(--measure);
+      margin-bottom: var(--space-12);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+      gap: var(--space-4);
+    }
+  </style>
+</BaseLayout>

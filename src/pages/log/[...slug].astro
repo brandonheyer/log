@@ -1,0 +1,65 @@
+---
+import { getCollection, getEntry, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { href } from '../../lib/url';
+import { fmtDate } from '../../lib/format';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('log');
+  return entries.map((entry) => ({ params: { slug: entry.id } }));
+}
+
+const { slug } = Astro.params;
+const entry = await getEntry('log', slug!);
+if (!entry) {
+  return Astro.redirect(href('log'));
+}
+const { Content } = await render(entry);
+
+const project = entry.data.project
+  ? await getEntry('projects', entry.data.project)
+  : undefined;
+---
+
+<BaseLayout
+  title={entry.data.title ?? fmtDate(entry.data.date)}
+  description={entry.data.title}
+>
+  <a class="back muted" href={href('log')}>← log</a>
+  <h1>{entry.data.title ?? fmtDate(entry.data.date)}</h1>
+  <p class="meta muted">
+    <span>{fmtDate(entry.data.date)}</span>
+    {
+      project && (
+        <span>
+          {' '}· <a href={href(`projects/${project.id}`)}>{project.data.title}</a>
+        </span>
+      )
+    }
+  </p>
+  {
+    entry.data.tags.length > 0 && (
+      <p>
+        {entry.data.tags.map((tag) => (
+          <span class="tag">#{tag}</span>
+        ))}
+      </p>
+    )
+  }
+
+  <article class="prose">
+    <Content />
+  </article>
+
+  <style>
+    .back {
+      display: inline-block;
+      margin-bottom: var(--space-4);
+      font-size: var(--text-sm);
+    }
+    .meta {
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+    }
+  </style>
+</BaseLayout>

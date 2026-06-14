@@ -1,0 +1,71 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EntryCard from '../../components/EntryCard.astro';
+import StatusBadge from '../../components/StatusBadge.astro';
+import { href } from '../../lib/url';
+import { fmtDate } from '../../lib/format';
+
+const projects = await getCollection('projects');
+
+// Group by status, in lifecycle order.
+const order = ['active', 'spark', 'paused', 'shipped', 'abandoned'] as const;
+const headings: Record<(typeof order)[number], string> = {
+  active: 'Active',
+  spark: 'Sparks',
+  paused: 'Paused',
+  shipped: 'Shipped',
+  abandoned: 'Let go',
+};
+
+const touched = (p: (typeof projects)[number]) =>
+  (p.data.updated ?? p.data.started ?? new Date(0)).getTime();
+
+const groups = order
+  .map((status) => ({
+    status,
+    items: projects
+      .filter((p) => p.data.status === status)
+      .sort((a, b) => touched(b) - touched(a)),
+  }))
+  .filter((g) => g.items.length > 0);
+---
+
+<BaseLayout title="Projects" description="Every project, by where it stands.">
+  <h1>Projects</h1>
+  <p class="muted">Grouped by where each one stands today.</p>
+
+  {
+    groups.map((group) => (
+      <section class="section">
+        <div class="section-head">
+          <h2>{headings[group.status]}</h2>
+          <span class="muted">{group.items.length}</span>
+        </div>
+        <div class="grid">
+          {group.items.map((p) => (
+            <EntryCard
+              title={p.data.title}
+              url={href(`projects/${p.id}`)}
+              meta={p.data.updated ? `touched ${fmtDate(p.data.updated)}` : undefined}
+              summary={p.data.summary}
+              tags={p.data.tags}
+            >
+              <StatusBadge slot="badge" status={p.data.status} />
+            </EntryCard>
+          ))}
+        </div>
+      </section>
+    ))
+  }
+
+  {projects.length === 0 && <p class="muted">No projects yet.</p>}
+
+  <style>
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+      gap: var(--space-4);
+    }
+  </style>
+</BaseLayout>

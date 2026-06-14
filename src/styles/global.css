@@ -1,0 +1,120 @@
+/* Base element styling. References tokens only — never raw values. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.6;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  font-weight: 650;
+}
+
+h1 {
+  font-size: var(--text-2xl);
+  margin: 0 0 var(--space-2);
+}
+
+h2 {
+  font-size: var(--text-xl);
+  margin: 0 0 var(--space-4);
+}
+
+code,
+pre {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+pre {
+  background: var(--color-surface);
+  border: var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  overflow-x: auto;
+}
+
+code {
+  background: var(--color-accent-soft);
+  border-radius: var(--radius-sm);
+  padding: 0.1em 0.35em;
+}
+
+pre code {
+  background: none;
+  padding: 0;
+}
+
+hr {
+  border: none;
+  border-top: var(--border);
+  margin: var(--space-6) 0;
+}
+
+/* Layout helpers */
+.container {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-4) var(--space-12);
+}
+
+.prose {
+  max-width: var(--measure);
+}
+
+.muted {
+  color: var(--color-muted);
+}
+
+.tag {
+  display: inline-block;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+  background: var(--color-accent-soft);
+  border-radius: var(--radius-sm);
+  padding: 0.05em 0.5em;
+  margin-right: var(--space-1);
+}
+
+.section {
+  margin-bottom: var(--space-12);
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: var(--border);
+}
+
+.section-head h2 {
+  margin: 0;
+}
