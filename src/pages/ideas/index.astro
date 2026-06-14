@@ -1,0 +1,44 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EntryCard from '../../components/EntryCard.astro';
+import { href } from '../../lib/url';
+import { fmtDate } from '../../lib/format';
+
+const ideas = (await getCollection('ideas')).sort(
+  (a, b) => b.data.captured.getTime() - a.data.captured.getTime()
+);
+---
+
+<BaseLayout title="Ideas" description="Ideas worth keeping.">
+  <h1>Ideas</h1>
+  <p class="muted">
+    Promoted out of the <a href={href('inbox')}>inbox</a> — kept because they
+    earned a second thought.
+  </p>
+
+  {
+    ideas.length > 0 ? (
+      <div class="grid">
+        {ideas.map((idea) => (
+          <EntryCard
+            title={idea.data.title ?? 'untitled idea'}
+            url={href(`ideas/${idea.id}`)}
+            meta={`captured ${fmtDate(idea.data.captured)}`}
+            tags={idea.data.tags}
+          />
+        ))}
+      </div>
+    ) : (
+      <p class="muted">No ideas promoted yet.</p>
+    )
+  }
+
+  <style>
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+      gap: var(--space-4);
+    }
+  </style>
+</BaseLayout>

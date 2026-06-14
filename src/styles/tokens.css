@@ -1,0 +1,95 @@
+/*
+ * Theming layer.
+ * Every color, space, and font in the app references one of these tokens via
+ * var(--token). Components never hardcode a raw value, so retheming the whole
+ * site later means editing this file and nothing else.
+ *
+ * Theme resolution today:
+ *   - default tokens below (light)
+ *   - dark overrides applied when the OS prefers dark, OR when an explicit
+ *     [data-theme='dark'] is set on <html>
+ * A manual toggle can be added later by setting document.documentElement's
+ * data-theme — no other file needs to change.
+ */
+
+:root {
+  /* palette */
+  --color-bg: #fbfaf8;
+  --color-surface: #ffffff;
+  --color-border: #e6e3dd;
+  --color-fg: #1f1d1a;
+  --color-muted: #6d6a63;
+  --color-accent: #b4541f;
+  --color-accent-soft: #f4e6dc;
+
+  /* status accents — referenced by StatusBadge */
+  --status-spark: #c2410c;
+  --status-active: #15803d;
+  --status-paused: #a16207;
+  --status-shipped: #1d4ed8;
+  --status-abandoned: #6b7280;
+
+  /* spacing scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+
+  /* type */
+  --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.75rem;
+  --text-2xl: 2.25rem;
+
+  /* shape */
+  --radius: 0.5rem;
+  --radius-sm: 0.25rem;
+  --border: 1px solid var(--color-border);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.04);
+  --measure: 42rem;
+}
+
+/* Dark tokens — shared by OS preference and the explicit attribute. */
+:root[data-theme='dark'] {
+  --color-bg: #16140f;
+  --color-surface: #201d17;
+  --color-border: #34302a;
+  --color-fg: #ece8e0;
+  --color-muted: #a39e93;
+  --color-accent: #e88a4a;
+  --color-accent-soft: #2c2018;
+
+  --status-spark: #fb923c;
+  --status-active: #4ade80;
+  --status-paused: #fbbf24;
+  --status-shipped: #60a5fa;
+  --status-abandoned: #9ca3af;
+
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-bg: #16140f;
+    --color-surface: #201d17;
+    --color-border: #34302a;
+    --color-fg: #ece8e0;
+    --color-muted: #a39e93;
+    --color-accent: #e88a4a;
+    --color-accent-soft: #2c2018;
+
+    --status-spark: #fb923c;
+    --status-active: #4ade80;
+    --status-paused: #fbbf24;
+    --status-shipped: #60a5fa;
+    --status-abandoned: #9ca3af;
+
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+}

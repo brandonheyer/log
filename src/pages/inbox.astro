@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { href } from '../lib/url';
+import { Content, rawContent } from '../../content/inbox.md';
+
+const count = rawContent()
+  .split('\n')
+  .filter((line) => /^\s*[-*]\s+\S/.test(line)).length;
+---
+
+<BaseLayout title="Inbox" description="Unsorted captures, newest on top.">
+  <h1>Inbox</h1>
+  <p class="muted">
+    {count} unsorted {count === 1 ? 'capture' : 'captures'}. Dump anything here;
+    sort it into <a href={href('ideas')}>ideas</a> or
+    <a href={href('projects')}>projects</a> whenever — or never.
+  </p>
+
+  <article class="prose inbox">
+    <Content />
+  </article>
+
+  <style>
+    .inbox :global(ul) {
+      padding-left: var(--space-4);
+    }
+    .inbox :global(li) {
+      margin-bottom: var(--space-2);
+    }
+  </style>
+</BaseLayout>

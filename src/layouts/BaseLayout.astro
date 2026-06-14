@@ -1,0 +1,91 @@
+---
+import '../styles/tokens.css';
+import '../styles/global.css';
+import { href } from '../lib/url';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+const siteTitle = 'log';
+const pageTitle = title ? `${title} · ${siteTitle}` : siteTitle;
+
+const nav = [
+  { label: 'Home', path: '' },
+  { label: 'Projects', path: 'projects' },
+  { label: 'Log', path: 'log' },
+  { label: 'Ideas', path: 'ideas' },
+  { label: 'Inbox', path: 'inbox' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="icon" href={href('favicon.svg')} type="image/svg+xml" />
+  </head>
+  <body>
+    <div class="container">
+      <header class="site-header">
+        <a class="brand" href={href()}>log</a>
+        <nav>
+          {nav.map((item) => <a href={href(item.path)}>{item.label}</a>)}
+        </nav>
+      </header>
+      <main>
+        <slot />
+      </main>
+      <footer class="site-footer muted">
+        A living work &amp; idea log.
+      </footer>
+    </div>
+
+    <style>
+      .site-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--space-4);
+        margin-bottom: var(--space-12);
+        padding-bottom: var(--space-4);
+        border-bottom: var(--border);
+      }
+      .brand {
+        font-family: var(--font-mono);
+        font-weight: 700;
+        font-size: var(--text-lg);
+        color: var(--color-fg);
+      }
+      .brand:hover {
+        text-decoration: none;
+        color: var(--color-accent);
+      }
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-4);
+        font-size: var(--text-sm);
+      }
+      nav a {
+        color: var(--color-muted);
+      }
+      nav a:hover {
+        color: var(--color-accent);
+        text-decoration: none;
+      }
+      .site-footer {
+        margin-top: var(--space-12);
+        padding-top: var(--space-4);
+        border-top: var(--border);
+        font-size: var(--text-sm);
+      }
+    </style>
+  </body>
+</html>
